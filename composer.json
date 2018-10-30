@@ -1,0 +1,39 @@
+{
+  "name": "xXc/SmsGatewaySender",
+  "description": "",
+  "type": "project",
+  "keywords": ["xxc"],
+  "authors": [
+    {
+      "name": "Michael Kumar",
+      "email": "m.kumar@abv.bg"
+    }
+  ],
+  "require": {
+    "php": "^5.5.9 || ^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "xxc\\smsgatewaysender\\": "src"
+    },
+    "files": [
+
+    ]
+  },
+  "prefer-stable": true,
+  "minimum-stability": "dev",
+  "license": "MIT",
+  "extra": {
+    "laravel": {
+      "aliases": [
+
+      ],
+      "providers": [
+        "xXc\\SmsGatewaySender\\SmsGatewaySenderServiceProvider"
+      ]
+    }
+  }
+}
