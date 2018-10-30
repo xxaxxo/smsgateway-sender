@@ -13,7 +13,7 @@ Desired usage
         $response = $smsGatewaySender
             ->from('')
             ->to('')
-            ->message('')
+            ->text('')
             ->send();
         if ($response->isSent()) {
 			//do whatever

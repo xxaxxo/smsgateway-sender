@@ -7,9 +7,9 @@
 
 namespace xXc\SmsGatewaySender\Request\PhoneNumber;
 
-use xXc\SmsGatewaySender\Request\PhoneNumber;
+use xXc\SmsGatewaySender\Request\Validator;
 
-class BulgarianPhoneNumber implements PhoneNumber
+class BulgarianPhoneNumber implements Validator
 {
     protected $countryCode = 359;
     protected $phoneLength = 12;
@@ -27,7 +27,6 @@ class BulgarianPhoneNumber implements PhoneNumber
         {
             return false;
         }
-
 
         return true;
     }

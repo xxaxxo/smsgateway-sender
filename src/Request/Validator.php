@@ -8,9 +8,8 @@
 namespace xXc\SmsGatewaySender\Request;
 
 
-interface PhoneNumber
+interface Validator
 {
-    public function validate(&$number);
-    public function clean($number);
-
+    public function validate(&$data);
+    public function clean($data);
 }
