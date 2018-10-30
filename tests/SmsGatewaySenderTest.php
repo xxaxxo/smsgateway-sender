@@ -65,6 +65,14 @@ class SmsGatewaySenderTest extends PHPUnit_Framework_TestCase
     }
 
     /** @test */
+    function a_message_can_be_set()
+    {
+        $dummyMessage = '359888888888';
+        $this->smsGatewaySender->text($dummyMessage);
+        $this->assertSame($dummyMessage, $this->smsGatewaySender->message());
+    }
+
+    /** @test */
     function a_message_cannot_be_sent_without_data()
     {
         try {
