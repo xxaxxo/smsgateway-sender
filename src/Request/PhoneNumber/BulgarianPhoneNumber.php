@@ -15,7 +15,7 @@ class BulgarianPhoneNumber implements Validator
     protected $phoneLength = 9;
 
     /**
-     * validates and cleans a number (removes spaces and inital +)
+     * validates and cleans a number (removes spaces and initial +)
      * @param $number
      * @return bool
      */
