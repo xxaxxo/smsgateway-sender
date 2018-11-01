@@ -12,18 +12,18 @@ use xXc\SmsGatewaySender\Request\Validator;
 class BulgarianPhoneNumber implements Validator
 {
     protected $countryCode = 359;
-    protected $phoneLength = 12;
+    protected $phoneLength = 9;
 
+    /**
+     * validates and cleans a number (removes spaces and inital +)
+     * @param $number
+     * @return bool
+     */
     public function validate(&$number)
     {
         $number = $this->clean($number);
 
-        if(!preg_match('{^359[\d]+$}', $number))
-        {
-            return false;
-        }
-
-        if(strlen($number) != $this->phoneLength)
+        if(!preg_match('{^'.$this->countryCode.'[\d]{'.$this->phoneLength.'}$}', $number))
         {
             return false;
         }
