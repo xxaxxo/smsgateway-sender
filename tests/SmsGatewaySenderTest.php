@@ -73,6 +73,20 @@ class SmsGatewaySenderTest extends PHPUnit_Framework_TestCase
     }
 
     /** @test */
+    function all_the_data_can_be_chained_on_request()
+    {
+        $dummyMessage = 'test message';
+        $dummyNumber = '359888888888';
+        $this->smsGatewaySender
+            ->text($dummyMessage)
+            ->from($dummyNumber)
+            ->to($dummyNumber);
+        $this->assertSame($dummyMessage, $this->smsGatewaySender->message());
+        $this->assertSame($dummyNumber, $this->smsGatewaySender->sender());
+        $this->assertSame([$dummyNumber], $this->smsGatewaySender->receiver());
+    }
+
+    /** @test */
     function a_message_cannot_be_sent_without_data()
     {
         try {

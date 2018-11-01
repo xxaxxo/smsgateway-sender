@@ -17,8 +17,12 @@ class SmsGatewaySender
     protected $phoneValidator = null;
     protected $messageValidator = null;
 
-
-    public function __construct($phoneValidator = null, $messageValidator = null)
+    /**
+     * SmsGatewaySender constructor.
+     * @param null $phoneValidator
+     * @param null $messageValidator
+     */
+    public function __construct(Validator $phoneValidator = null, Validator $messageValidator = null)
     {
         if (!is_null($phoneValidator)) {
             $this->phoneValidator = $phoneValidator;
@@ -39,6 +43,13 @@ class SmsGatewaySender
         'text' => null,
     ];
 
+    /**
+     * setter for a receiver/s
+     * accepts string (phoneNumber) or array of phoneNumbers for multiple receivers
+     * @param $phoneNumber
+     * @return $this
+     * @throws BadRequestException
+     */
     public function to($phoneNumber)
     {
         if (!is_array($phoneNumber)) {
@@ -57,6 +68,11 @@ class SmsGatewaySender
         return $this;
     }
 
+    /**
+     * setter for from number (sender)
+     * @param $phoneNumber
+     * @return $this
+     */
     public function from($phoneNumber)
     {
         $this->smsData['from'] = $phoneNumber;
@@ -64,45 +80,79 @@ class SmsGatewaySender
         return $this;
     }
 
+    /**
+     * setter for message text
+     * @param $text
+     * @return $this
+     */
     public function text($text)
     {
+        $this->messageValidator->validate($text);
         $this->smsData['text'] = $text;
-
         return $this;
     }
 
+    /**
+     * actual sending of a message
+     */
     public function send()
     {
         $this->validateData();
     }
 
+    /**
+     * getter for a receiver
+     * @return mixed
+     */
     public function receiver()
     {
         return $this->smsData['to'];
     }
 
+    /**
+     * getter for the sender
+     * @return mixed
+     */
     public function sender()
     {
         return $this->smsData['from'];
     }
 
+    /**
+     * getter for the message body
+     * @return mixed
+     */
     public function message()
     {
         return $this->smsData['text'];
     }
 
+    /**
+     * setter for a custom phone validator
+     * @param Validator $validator
+     * @return $this
+     */
     public function setPhoneValidator(Validator $validator)
     {
         $this->phoneValidator = $validator;
         return $this;
     }
 
+    /**
+     * setter for a custom message validator
+     * @param Validator $validator
+     * @return $this
+     */
     public function setMessageValidator(Validator $validator)
     {
         $this->messageValidator = $validator;
         return $this;
     }
 
+    /**
+     * validates the data before sending
+     * @throws BadRequestException
+     */
     private function validateData()
     {
         if (empty($this->smsData['to'])) {
