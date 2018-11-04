@@ -128,6 +128,7 @@ class SmsGatewaySender
                 'password' => $this->configure('config.password'),
             ]
         );
+        $this->query['to'] = implode(',',$this->query['to']);
         $fullQueryParams = [
             'verify' => false,
             'query' => $this->query,
