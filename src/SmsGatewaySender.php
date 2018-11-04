@@ -120,7 +120,7 @@ class SmsGatewaySender
     public function send()
     {
         $this->validateData();
-        $this->url = $this->configure('config.host').':'.$this->configure('config.port');
+
         $this->query = array_merge(
             $this->smsData,
             [
@@ -128,12 +128,13 @@ class SmsGatewaySender
                 'password' => $this->configure('config.password'),
             ]
         );
+        $this->query['to'] = implode(',',$this->query['to']);
         $fullQueryParams = [
             'verify' => false,
             'query' => $this->query,
         ];
-
-        return $this->parseResponse($this->client->get($this->url.http_build_query($this->query), $fullQueryParams)->getBody()->getContents());
+        $this->url = $this->configure('config.host').':'.$this->configure('config.port').'/?'.http_build_query($this->query);
+        return $this->parseResponse($this->client->get($this->url, $fullQueryParams)->getBody()->getContents());
     }
 
     /**
