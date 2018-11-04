@@ -12,7 +12,9 @@ use Illuminate\Support\ServiceProvider;
 class SmsGatewaySenderServiceProvider extends ServiceProvider
 {
     public function boot()
-    {}
+    {
+        $this->publishConfig();
+    }
 
     public function register()
     {
@@ -20,5 +22,17 @@ class SmsGatewaySenderServiceProvider extends ServiceProvider
         {
             $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'SmsGatewaySender');
         }
+    }
+
+    private function publishConfig()
+    {
+        $path = $this->getConfigPath();
+        $this->publishes([$path => config_path('config.php')], 'config');
+    }
+
+
+    private function getConfigPath()
+    {
+        return __DIR__ . '/../config/config.php';
     }
 }

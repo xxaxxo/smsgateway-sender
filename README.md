@@ -2,7 +2,13 @@
 This package is for standard php project use, but has optimisations for laravel usage.
 
 ##Installation
-@todo - document the installation process
+composer require xxc/smsgateway-sender
+
+for laravel if you're not using package discovery add
+```php
+        xXc\SmsGatewaySender\SmsGatewaySenderServiceProvider::class
+```
+to config/app.php
 
 ##Usage
 
@@ -37,6 +43,11 @@ $smsGatewaySender = new \xXc\SmsGatewaySender();
 $smsGatewaySender->setPhoneValidator($customPhoneValidator);
 $smsGatewaySender->setMessageValidator($customMessageValidator);
 ```
+to publish the config
+```php
+php artisan vendor:publish
+```
+then choose the xXc\SmsServiceProvider tag
 
 Contributing:
 You can create custom validators for phone numbers or text messages (if needed) and create pull requests
