@@ -23,6 +23,8 @@ class SmsGatewaySender
     protected $phoneValidator = null;
     protected $messageValidator = null;
     protected $client = null;
+    protected $url = null;
+    protected $query = null;
     protected $smsData = [
         'to' => [],
         'from' => null,
@@ -118,19 +120,20 @@ class SmsGatewaySender
     public function send()
     {
         $this->validateData();
-        $uri = $this->configure('config.host').':'.$this->configure('config.port');
+        $this->url = $this->configure('config.host').':'.$this->configure('config.port');
+        $this->query = array_merge(
+            $this->smsData,
+            [
+                'username' => $this->configure('config.username'),
+                'password' => $this->configure('config.password'),
+            ]
+        );
         $fullQueryParams = [
             'verify' => false,
-            'query' => array_merge(
-                $this->smsData,
-                [
-                    'username' => $this->configure('config.username'),
-                    'password' => $this->configure('config.password'),
-                ]
-            ),
+            'query' => $this->query,
         ];
 
-        return $this->parseResponse($this->client->get($uri, $fullQueryParams)->getBody()->getContents());
+        return $this->parseResponse($this->client->get($this->url.http_build_query($this->query), $fullQueryParams)->getBody()->getContents());
     }
 
     /**
@@ -213,7 +216,7 @@ class SmsGatewaySender
     {
         if (!function_exists('config')) {
             preg_match('{^config\.(?<keyword>[a-z]+)$}', $param, $match);
-            $conf = new Repository(array_merge(require __DIR__.'/../config/config.php', []));
+            $conf = new Repository(array_merge(require __DIR__.'/../config/smsgateway_sender.php', []));
 
             return $conf->get($match['keyword']);
         } else {
@@ -243,11 +246,15 @@ class SmsGatewaySender
                 $this->errors[] = [
                     'code' => $error['errorCode'],
                     'message' => $error['errorMessage'],
+                    'url' => $this->url,
+                    'query' => $this->query,
                 ];
             } else {
                 $this->errors[] = [
                     'code' => null,
                     'message' => $response,
+                    'url' => $this->url,
+                    'query' => $this->query,
                 ];
             }
 
