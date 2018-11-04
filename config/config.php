@@ -2,9 +2,9 @@
 
 
 return [
-    'host' => '',
-    'port' => '',
-    'smsc-username' => '',
-    'smsc-password' => '',
-    'validityperiod' => '',
+    'host' => 'http://example.host',
+    'port' => '1234',
+    'username' => 'test',
+    'password' => 'test',
+    'validityperiod' => '1200',
 ];

@@ -6,6 +6,8 @@
  */
 
 namespace xXc\SmsGatewaySender;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use PHPUnit_Framework_TestCase;
 use xXc\SmsGatewaySender\Exception\BadRequestException;
 
@@ -96,6 +98,44 @@ class SmsGatewaySenderTest extends PHPUnit_Framework_TestCase
             return;
         }
         $this->fail('An exception was not thrown but expected');
+    }
+
+    /** @test */
+    function a_message_can_be_sent()
+    {
+            $successMessage = 'SUCCESS MessageId: 5093c47680aa7-5267-87898; Recipient:44201112345674';
+            $fakeClient = \Mockery::mock('GuzzleHttp\Client');
+            $fakeClient->shouldReceive('get->getBody->getContents')->andReturn($successMessage);
+
+            $dummyMessage = 'test message';
+            $dummyNumber = '359888888888';
+            $smsGatewaySender = new SmsGatewaySender(null, null, $fakeClient);
+            $response = $smsGatewaySender
+                ->from($dummyNumber)
+                ->to($dummyNumber)
+                ->text($dummyMessage)
+                ->send();
+            $this->assertTrue($response->isSent());
+            $this->assertEmpty($response->errors());
+    }
+
+    /** @test */
+    function a_message_can_have_errors_on_senging()
+    {
+            $errorMessage = 'ERRNO 302: Failed to send message';
+            $fakeClient = \Mockery::mock('GuzzleHttp\Client');
+            $fakeClient->shouldReceive('get->getBody->getContents')->andReturn($errorMessage);
+
+            $dummyMessage = 'test message';
+            $dummyNumber = '359888888888';
+            $smsGatewaySender = new SmsGatewaySender(null, null, $fakeClient);
+            $response = $smsGatewaySender
+                ->from($dummyNumber)
+                ->to($dummyNumber)
+                ->text($dummyMessage)
+                ->send();
+            $this->assertFalse($response->isSent());
+            $this->assertNotEmpty($response->errors());
     }
 
 }

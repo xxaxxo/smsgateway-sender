@@ -7,23 +7,41 @@
 
 namespace xXc\SmsGatewaySender;
 
+use GuzzleHttp\Client;
+use Illuminate\Config\Repository;
+use Illuminate\Support\Facades\Config;
 use xXc\SmsGatewaySender\Exception\BadRequestException;
 use xXc\SmsGatewaySender\Request\Message\CyrillicMessage;
 use xXc\SmsGatewaySender\Request\PhoneNumber\BulgarianPhoneNumber;
 use xXc\SmsGatewaySender\Request\Validator;
 
+
 class SmsGatewaySender
 {
+    public $errors = [];
+    public $messageId = null;
     protected $phoneValidator = null;
     protected $messageValidator = null;
+    protected $client = null;
+    protected $smsData = [
+        'to' => [],
+        'from' => null,
+        'text' => null,
+    ];
+    private $knownErrors = [
+        '',
+    ];
 
     /**
      * SmsGatewaySender constructor.
      * @param null $phoneValidator
      * @param null $messageValidator
      */
-    public function __construct(Validator $phoneValidator = null, Validator $messageValidator = null)
-    {
+    public function __construct(
+        Validator $phoneValidator = null,
+        Validator $messageValidator = null,
+        Client $client = null
+    ) {
         if (!is_null($phoneValidator)) {
             $this->phoneValidator = $phoneValidator;
         } else {
@@ -35,13 +53,14 @@ class SmsGatewaySender
         } else {
             $this->messageValidator = new CyrillicMessage();
         }
-    }
 
-    protected $smsData = [
-        'to' => [],
-        'from' => null,
-        'text' => null,
-    ];
+
+        if (!is_null($client)) {
+            $this->client = $client;
+        } else {
+            $this->client = new Client();
+        }
+    }
 
     /**
      * setter for a receiver/s
@@ -89,6 +108,7 @@ class SmsGatewaySender
     {
         $this->messageValidator->validate($text);
         $this->smsData['text'] = $text;
+
         return $this;
     }
 
@@ -98,6 +118,19 @@ class SmsGatewaySender
     public function send()
     {
         $this->validateData();
+        $uri = $this->configure('config.host').':'.$this->configure('config.port');
+        $fullQueryParams = [
+            'verify' => false,
+            'query' => array_merge(
+                $this->smsData,
+                [
+                    'username' => $this->configure('config.username'),
+                    'password' => $this->configure('config.password'),
+                ]
+            ),
+        ];
+
+        return $this->parseResponse($this->client->get($uri, $fullQueryParams)->getBody()->getContents());
     }
 
     /**
@@ -135,6 +168,7 @@ class SmsGatewaySender
     public function setPhoneValidator(Validator $validator)
     {
         $this->phoneValidator = $validator;
+
         return $this;
     }
 
@@ -146,6 +180,7 @@ class SmsGatewaySender
     public function setMessageValidator(Validator $validator)
     {
         $this->messageValidator = $validator;
+
         return $this;
     }
 
@@ -172,6 +207,59 @@ class SmsGatewaySender
                 'No text for a message has been set. You must use the ->text() method to set it'
             );
         }
+    }
+
+    public function configure($param)
+    {
+        if (!function_exists('config')) {
+            preg_match('{^config\.(?<keyword>[a-z]+)$}', $param, $match);
+            $conf = new Repository(array_merge(require __DIR__.'/../config/config.php', []));
+
+            return $conf->get($match['keyword']);
+        } else {
+            return config($param);
+        }
+    }
+
+    public function isSent()
+    {
+        return $this->messageId != null;
+    }
+
+    public function parseResponse($response)
+    {
+        if (preg_match(
+            '{success\s(MessageId|Message\sId):\s(?<messageId>[a-z0-9\-]+)\;(\sRecipient:|Recipient:)(?<recepient>[0-9]+)}i',
+            $response,
+            $success
+        )) {
+            $this->messageId = $success['messageId'];
+        } else {
+            if (preg_match(
+                '{error:(?<errorCode>[0-9]+);[\s]?(status\:)?(?<errorMessage>[\w\d\s\[\]\.\,\(\)\-]+)$}i',
+                $response,
+                $error
+            )) {
+                $this->errors[] = [
+                    'code' => $error['errorCode'],
+                    'message' => $error['errorMessage'],
+                ];
+            } else {
+                $this->errors[] = [
+                    'code' => null,
+                    'message' => $response,
+                ];
+            }
+
+
+        }
+
+        return $this;
+    }
+
+    public function errors()
+    {
+        return $this->errors;
     }
 
 
